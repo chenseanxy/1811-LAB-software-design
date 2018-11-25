@@ -4,6 +4,7 @@
 *.pickle
 *.model
 *.csv
+*.history
 logs/
 
 # Byte-compiled / optimized / DLL files
