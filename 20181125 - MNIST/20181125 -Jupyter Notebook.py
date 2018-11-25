@@ -11,12 +11,11 @@ print(area)
 
 #%% [markdown]
 # # Task 2
-#%% [markdown]
-# Currently not available due to Jupyter restrictions
+# TODO
+
 #%% [markdown]
 # # Task 3
-#%% [markdown]
-# Using python's eval() function for evalutaion
+# # Using python's eval() function for evalutaion
 
 #%%
 input3=input()
@@ -65,6 +64,5 @@ for i in range(5):
 
 #%% [markdown]
 # # Task 5
-#%% [markdown]
-# Currently not available due to Jupyter restrictions
+# TODO
 
