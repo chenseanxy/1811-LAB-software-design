@@ -1,7 +1,7 @@
 #%% [markdown]
 # # Simple CNN for MNIST
 #%% [markdown]
-# ### Imports:  
+# ## Imports:  
 # 
 
 #%%
@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import seaborn as sns
-get_ipython().run_line_magic('matplotlib', 'inline')
+%matplotlib inline
 
 np.random.seed(2)
 
@@ -23,21 +23,35 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import ReduceLROnPlateau, TensorBoard
+
+import tensorflow as tf
+import os
+import time
+import pickle
 
 sns.set(style='white', context='notebook', palette='deep')
 
 #%% [markdown]
-# ### Data
+# #### Working directory:
 
 #%%
-train = pd.read_csv("C:/Users/chenx/Desktop/1811_softdesign/20181125 - MNIST/train.csv")
-test = pd.read_csv("C:/Users/chenx/Desktop/1811_softdesign/20181125 - MNIST/test.csv")
+working_dir="C:/Users/chenx/Desktop/1811_softdesign/20181125 - MNIST/"
+
+#%% [markdown]
+# ## Data
+
+#%%
+train_csv_path = os.path.join(working_dir, "train.csv")
+test_csv_path = os.path.join(working_dir, "test.csv")
+
+train = pd.read_csv(train_csv_path)
+test = pd.read_csv(test_csv_path)
 
 #%% [markdown]
 # #### Separate training data into X,Y:  
-# Y: Training Label  
-# X: Image Data
+# X: Training Label  
+# Y: Image Data
 
 #%%
 Y_train = train["label"]
@@ -47,19 +61,21 @@ X_train = train.drop(labels = ["label"],axis = 1)
 g = sns.countplot(Y_train)
 Y_train.value_counts()
 
-
 #%% [markdown]
 # #### Checking for nulls:
 
 #%%
 X_train.isnull().any().describe()
 
+
 #%%
 test.isnull().any().describe()
 
 #%% [markdown]
 # #### Normalization:
-# From grayscale 0~255 to 0~1
+#   
+#   From grayscale 0~255 to 0~1  
+#   
 
 #%%
 X_train = X_train / 255.0
@@ -67,7 +83,7 @@ test = test / 255.0
 
 #%% [markdown]
 # #### Reshaping:
-# From 784 to 28x28x1
+# From 1D 784 to 28x28x1
 
 #%%
 X_train = X_train.values.reshape(-1,28,28,1)
@@ -76,7 +92,7 @@ test = test.values.reshape(-1,28,28,1)
 g = plt.imshow(X_train[0][:,:,0], cmap=plt.cm.binary)
 
 #%% [markdown]
-# #### Y_train label to vector
+# #### Y_train label to hot vector
 
 #%%
 Y_train = to_categorical(Y_train, num_classes = 10)
@@ -94,12 +110,54 @@ X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train,
                                                   random_state=random_seed)
 
 #%% [markdown]
-# ### Models
-# Simple
-# Convoluted
+# #### Saving processed data
+#     Using pickle to save processed data
+
+#%%
+pfile = open(os.path.join("X_train.pickle"), "wb")
+pickle.dump(X_train, pfile)
+pfile.close()
+
+pfile = open(os.path.join("X_test.pickle"), "wb")
+pickle.dump(X_test, pfile)
+pfile.close()
+
+pfile = open(os.path.join("Y_train.pickle"), "wb")
+pickle.dump(Y_train, pfile)
+pfile.close()
+
+pfile = open(os.path.join("Y_test.pickle"), "wb")
+pickle.dump(Y_test, pfile)
+pfile.close()
+
+#%%
+# Loading pickle data
+pfile = open(os.path.join("X_train.pickle"), "rb")
+X_train = pickle.load(pfile)
+pfile.close()
+
+pfile = open(os.path.join("X_test.pickle"), "rb")
+X_test = pickle.load(pfile)
+pfile.close()
+
+pfile = open(os.path.join("Y_train.pickle"), "rb")
+Y_train = pickle.load(pfile)
+pfile.close()
+
+pfile = open(os.path.join("Y_test.pickle"), "rb")
+Y_test = pickle.load(pfile)
+pfile.close()
 
 #%% [markdown]
-# #### Super simple model as follows:
+# ## Models
+# + Simple
+# + Convoluted
+#%% [markdown]
+# ### Super simple model
+#      Input Layer
+#      All connected, size 128
+#      All connected, size 128
+#      Output all connected, size 10
 
 #%%
 simple_model = Sequential()
@@ -109,26 +167,36 @@ simple_model.add(Dense(128, activation="relu"))
 simple_model.add(Dense(128, activation="relu"))
 simple_model.add(Dense(10, activation="softmax"))
 
+#%% [markdown]
+# #### Training
+#     Using "adam" as optimizer: this is an ordinary optimizer for NNs
+#     "categorical_crossentropy" as loss function: this is also ordinary
+#     Epoch: 5, not a very complicated network
 
 #%%
 simple_model.compile(optimizer='adam',
             loss='categorical_crossentropy',
             metrics=['accuracy'])
 
+
 #%%
-simple_model.fit(X_train, Y_train, epochs=3)
+simple_model.fit(X_train, Y_train, epochs=5)
 
 #%% [markdown]
-# #### Training and evaluation
+# #### Evaluation
+#      Loss and accuracy is slightly lower than in training:
+#      Not very overfitted
 
 #%%
 val_loss, val_acc = simple_model.evaluate(X_test, Y_test)
 print(val_loss, val_acc)
 
+#%% [markdown]
+# #### Looking at a random example
+
+#%%
 predictions = simple_model.predict([X_test])
 
-#%% [markdown]
-# Taking look at a few examples:
 
 #%%
 choice = np.random.randint(0,4201)
@@ -137,13 +205,26 @@ print(np.argmax(predictions[choice]))
 g = plt.imshow(X_test[choice][:,:,0], cmap=plt.cm.binary)
 
 #%% [markdown]
-# #### Saving simple model:
+# #### Saving simple_model
 
 #%%
-## simple_model.save("C:/Users/chenx/Desktop/1811_softdesign/20181125 - MNIST/simple.model")
+simple_model_name = "mnist-simple-{}.model".format(int(time.time()))
+simple_model.save(os.path.join(simple_model_name))
 
 #%% [markdown]
-# CNN Model:
+# ### CNN Model:
+#     Convlution size32 x2
+#     Down Sampling by 2x2
+#     Drop Out by 25% probablity
+#     
+#     Convlution size64 x2
+#     Down Sampling by 2x2
+#     Drop Out by 25% probablity
+#     
+#     Flatten layer
+#     All connected size256
+#     Drop Out by 50% probablity
+#     Output all connected size10
 
 #%%
 cnn_model = Sequential()
@@ -182,10 +263,20 @@ cnn_model.add(Dropout(0.5))
 # Output Layer
 cnn_model.add(Dense(10, activation='softmax'))
 
+#%% [markdown]
+# #### Optimizer and loss function
+# * Optimizer:
+#     RMSprop
+# * Loss Function:
+#     categorical_crossentropy as ordinary loss function
+
 #%%
 cnn_model.compile(optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0),
                 loss='categorical_crossentropy',
                 metrics=['accuracy'])
+
+#%% [markdown]
+# #### Learning rate reduction
 
 #%%
 learning_rate_reduction = ReduceLROnPlateau(monitor='val_acc', 
@@ -193,6 +284,10 @@ learning_rate_reduction = ReduceLROnPlateau(monitor='val_acc',
                                             verbose=1, 
                                             factor=0.5, 
                                             min_lr=0.00001)
+
+#%% [markdown]
+# #### Data augmentation
+#     Randomly shift, zoom ,rotate; manipulate the images to minimize overfitting
 
 #%%
 datagen = ImageDataGenerator(
@@ -211,3 +306,16 @@ datagen = ImageDataGenerator(
 datagen.fit(X_train)
 
 #%%
+cnn_model_name = "mnist-cnn-{}".format(int(time.time()))
+logd = os.path.join(working_dir, "logs", cnn_model_name)
+tensorboard = TensorBoard(log_dir=logd)
+
+#%%
+epochs = 30
+batch_size = 100
+history = cnn_model.fit_generator(datagen.flow(X_train,Y_train,batch_size=batch_size),
+                                  epochs = epochs, 
+                                  validation_data = (X_test,Y_test),
+                                  verbose = 2, 
+                                  steps_per_epoch = X_train.shape[0] // batch_size, 
+                                  callbacks = [learning_rate_reduction])
