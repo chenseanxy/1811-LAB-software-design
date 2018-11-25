@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import seaborn as sns
-%matplotlib inline
+get_ipython().run_line_magic('matplotlib', 'inline')
 
 np.random.seed(2)
 
@@ -32,18 +32,14 @@ import pickle
 
 sns.set(style='white', context='notebook', palette='deep')
 
-#%% [markdown]
-# #### Working directory:
-
-#%%
 working_dir="C:/Users/chenx/Desktop/1811_softdesign/20181125 - MNIST/"
 
 #%% [markdown]
 # ## Data
 
 #%%
-train_csv_path = os.path.join(working_dir, "train.csv")
-test_csv_path = os.path.join(working_dir, "test.csv")
+train_csv_path = os.path.join(working_dir, "dataset","train.csv")
+test_csv_path = os.path.join(working_dir, "dataset", "test.csv")
 
 train = pd.read_csv(train_csv_path)
 test = pd.read_csv(test_csv_path)
@@ -74,7 +70,7 @@ test.isnull().any().describe()
 #%% [markdown]
 # #### Normalization:
 #   
-#   From grayscale 0~255 to 0~1  
+# From grayscale 0~255 to 0~1  
 #   
 
 #%%
@@ -114,37 +110,37 @@ X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train,
 #     Using pickle to save processed data
 
 #%%
-pfile = open(os.path.join("X_train.pickle"), "wb")
+pfile = open(os.path.join(working_dir, "pickle", "X_train.pickle"), "wb")
 pickle.dump(X_train, pfile)
 pfile.close()
 
-pfile = open(os.path.join("X_test.pickle"), "wb")
+pfile = open(os.path.join(working_dir, "pickle", "X_test.pickle"), "wb")
 pickle.dump(X_test, pfile)
 pfile.close()
 
-pfile = open(os.path.join("Y_train.pickle"), "wb")
+pfile = open(os.path.join(working_dir, "pickle", "Y_train.pickle"), "wb")
 pickle.dump(Y_train, pfile)
 pfile.close()
 
-pfile = open(os.path.join("Y_test.pickle"), "wb")
+pfile = open(os.path.join(working_dir, "pickle", "Y_test.pickle"), "wb")
 pickle.dump(Y_test, pfile)
 pfile.close()
 
+
 #%%
-# Loading pickle data
-pfile = open(os.path.join("X_train.pickle"), "rb")
+pfile = open(os.path.join(working_dir, "pickle", "X_train.pickle"), "rb")
 X_train = pickle.load(pfile)
 pfile.close()
 
-pfile = open(os.path.join("X_test.pickle"), "rb")
+pfile = open(os.path.join(working_dir, "pickle", "X_test.pickle"), "rb")
 X_test = pickle.load(pfile)
 pfile.close()
 
-pfile = open(os.path.join("Y_train.pickle"), "rb")
+pfile = open(os.path.join(working_dir, "pickle", "Y_train.pickle"), "rb")
 Y_train = pickle.load(pfile)
 pfile.close()
 
-pfile = open(os.path.join("Y_test.pickle"), "rb")
+pfile = open(os.path.join(working_dir, "pickle", "Y_test.pickle"), "rb")
 Y_test = pickle.load(pfile)
 pfile.close()
 
@@ -180,7 +176,9 @@ simple_model.compile(optimizer='adam',
 
 
 #%%
-simple_model.fit(X_train, Y_train, epochs=5)
+simple_model.fit(X_train, Y_train, 
+                 epochs=30,
+                validation_data = (X_test,Y_test))
 
 #%% [markdown]
 # #### Evaluation
@@ -209,7 +207,7 @@ g = plt.imshow(X_test[choice][:,:,0], cmap=plt.cm.binary)
 
 #%%
 simple_model_name = "mnist-simple-{}.model".format(int(time.time()))
-simple_model.save(os.path.join(simple_model_name))
+simple_model.save(os.path.join(working_dir, "models", simple_model_name))
 
 #%% [markdown]
 # ### CNN Model:
@@ -232,12 +230,14 @@ cnn_model = Sequential()
 cnn_model.add(Conv2D(filters = 32,
                     kernel_size = (5,5),
                     padding = 'Same',
-                    activation = 'relu'))
+                    activation = 'relu',
+                    input_shape = (28,28,1)))
 
 cnn_model.add(Conv2D(filters = 32,
                     kernel_size = (5,5),
                     padding = 'Same',
-                    activation = 'relu'))
+                    activation = 'relu',
+                    input_shape = (28,28,1)))
 
 cnn_model.add(MaxPool2D(pool_size=(2, 2)))
 cnn_model.add(Dropout(0.25))
@@ -246,12 +246,14 @@ cnn_model.add(Dropout(0.25))
 cnn_model.add(Conv2D(filters = 64,
                     kernel_size = (3, 3),
                     padding = 'Same',
-                    activation = 'relu'))
+                    activation = 'relu',
+                    input_shape = (28,28,1)))
 
 cnn_model.add(Conv2D(filters = 64,
                     kernel_size = (3, 3),
                     padding = 'Same',
-                    activation = 'relu'))
+                    activation = 'relu',
+                    input_shape = (28,28,1)))
 
 cnn_model.add(MaxPool2D(pool_size=(2, 2),
                         strides=(2, 2)))
@@ -260,20 +262,20 @@ cnn_model.add(Dropout(0.25))
 cnn_model.add(Flatten())
 cnn_model.add(Dense(256, activation='relu'))
 cnn_model.add(Dropout(0.5))
-# Output Layer
-cnn_model.add(Dense(10, activation='softmax'))
+cnn_model.add(Dense(10, activation='softmax')) # Output Layer
 
 #%% [markdown]
 # #### Optimizer and loss function
 # * Optimizer:
-#     RMSprop
+#       "Adam", because it is easier to type
 # * Loss Function:
-#     categorical_crossentropy as ordinary loss function
+#       categorical_crossentropy as ordinary loss function
 
 #%%
-cnn_model.compile(optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0),
+cnn_model.compile(optimizer='adam',
                 loss='categorical_crossentropy',
                 metrics=['accuracy'])
+hasattr(cnn_model, 'train_function')
 
 #%% [markdown]
 # #### Learning rate reduction
@@ -305,17 +307,35 @@ datagen = ImageDataGenerator(
 
 datagen.fit(X_train)
 
+#%% [markdown]
+# #### Training
+
 #%%
-cnn_model_name = "mnist-cnn-{}".format(int(time.time()))
+epochs = 16
+batch_size = 16
+
+
+#%%
+#Setting up TensorBoard:
+cnn_model_name = "mnist-cnn-e%i-b%i-%i" %(epochs, batch_size,int(time.time()))
 logd = os.path.join(working_dir, "logs", cnn_model_name)
 tensorboard = TensorBoard(log_dir=logd)
 
+
 #%%
-epochs = 30
-batch_size = 100
 history = cnn_model.fit_generator(datagen.flow(X_train,Y_train,batch_size=batch_size),
                                   epochs = epochs, 
-                                  validation_data = (X_test,Y_test),
-                                  verbose = 2, 
+                                  validation_data = (X_test,Y_test), 
                                   steps_per_epoch = X_train.shape[0] // batch_size, 
-                                  callbacks = [learning_rate_reduction])
+                                  callbacks = [learning_rate_reduction, tensorboard])
+
+
+#%%
+val_loss, val_acc = cnn_model.evaluate(X_test, Y_test)
+print(val_loss, val_acc)
+
+
+#%%
+cnn_model.save(os.path.join(working_dir, "models", cnn_model_name)+".model")
+
+
