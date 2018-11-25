@@ -1,3 +1,5 @@
+.vscode/
+
 #Training data
 *.pickle
 *.model
