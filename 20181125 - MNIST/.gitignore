@@ -5,6 +5,7 @@
 *.model
 *.csv
 *.jpg
+*.history
 logs/
 
 # Byte-compiled / optimized / DLL files
