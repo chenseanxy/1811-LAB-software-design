@@ -1,10 +1,10 @@
-.vscode/
+
 
 #Training data
 *.pickle
 *.model
 *.csv
-*.history
+*.jpg
 logs/
 
 # Byte-compiled / optimized / DLL files
