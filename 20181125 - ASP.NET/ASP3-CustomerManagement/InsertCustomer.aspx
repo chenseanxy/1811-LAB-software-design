@@ -28,7 +28,7 @@
                     <asp:Label ID="CustomerLastNameLabel" runat="server" Text="Last Name:"></asp:Label>
                 </div>
                 <div class="customerTableRightCol">
-                    <asp:TextBox ID="TextBox2" runat="server" MaxLength="30"></asp:TextBox>
+                    <asp:TextBox ID="CustomerLastNameTextBox" runat="server" MaxLength="30"></asp:TextBox>
                 </div>
             </div>
             <div class="customerTableRow">
@@ -68,7 +68,7 @@
                     <asp:Label ID="CustomerCountryLabel" runat="server" Text="Country:"></asp:Label>
                 </div>
                 <div class="customerTableRightCol">
-                    <asp:DropDownList ID="CustomerCountryDropDownLis" runat="server">
+                    <asp:DropDownList ID="CustomerCountryDropDownList" runat="server">
                     </asp:DropDownList>
                 </div>
             </div>
