@@ -19,7 +19,7 @@ from sklearn.metrics import confusion_matrix
 import itertools
 
 from keras.utils.np_utils import to_categorical # convert to one-hot-encoding
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
@@ -312,7 +312,7 @@ datagen.fit(X_train)
 
 #%%
 epochs = 16
-batch_size = 16
+batch_size = 128
 
 
 #%%
@@ -337,5 +337,102 @@ print(val_loss, val_acc)
 
 #%%
 cnn_model.save(os.path.join(working_dir, "models", cnn_model_name)+".model")
+
+#Pickle-dumping training history
+pfile = open(os.path.join(working_dir, "models", cnn_model_name)+".history", "wb")
+pickle.dump(history, pfile)
+pfile.close()
+
+#%% [markdown]
+# #### Optimizing model:
+#     conv -> pool -> (for n conv layers) -> dropout -> flatten -> dense(size n) -> (for n dense layers) -> dropout -> output
+
+#%%
+epochs = 50
+batch_size = 64
+
+#Defining optimizing paramaters
+dense_sizes=[128, 256, 384]
+dense_layers=[0, 1, 2]
+conv_layers=[2, 3, 4, 5]
+
+for dense_layer in dense_layers:
+    for dense_size in dense_sizes:
+        for conv_layer in conv_layers:
+            
+            opt_model_name="opt-dense{}-dsize{}-conv{}-{}".format(dense_layer, dense_size, conv_layer, int(time.time()))
+            logd = os.path.join(working_dir, "logs", opt_model_name)
+            tensorboard = TensorBoard(log_dir=logd)
+            
+            opt_cnn_model = Sequential()
+            # Input layer
+            opt_cnn_model.add(Conv2D(filters = 32,
+                            kernel_size = (5,5),
+                            padding = 'Same',
+                            activation = 'relu',
+                            input_shape = (28,28,1)))
+            
+            for i in range(conv_layer - 1):
+                opt_cnn_model.add(Conv2D(filters = 64,
+                                        kernel_size = (3,3),
+                                        padding = 'Same',
+                                        activation = 'relu'))
+
+                opt_cnn_model.add(MaxPool2D(pool_size=(2, 2)))
+            
+                                  
+            opt_cnn_model.add(Dropout(0.25))
+            opt_cnn_model.add(Flatten())
+            
+            for i in range(dense_layer):
+                opt_cnn_model.add(Dense(dense_size, activation='relu'))
+            
+            opt_cnn_model.add(Dropout(0.5))
+            opt_cnn_model.add(Dense(10, activation='softmax')) # Output Layer
+            
+            
+            # Compiling model
+            opt_cnn_model.compile(optimizer='adam',
+                                loss='categorical_crossentropy',
+                                metrics=['accuracy'])
+            
+            # Training model
+            history = opt_cnn_model.fit_generator(datagen.flow(X_train,Y_train,batch_size=batch_size),
+                                                  epochs = epochs, 
+                                                  validation_data = (X_test,Y_test), 
+                                                  steps_per_epoch = X_train.shape[0] // batch_size, 
+                                                  callbacks = [learning_rate_reduction, tensorboard])
+            
+            # Saving model:
+            opt_cnn_model.save(os.path.join(working_dir, "opt-models", opt_model_name)+".model")
+
+            # Pickle-dumping training history
+            pfile = open(os.path.join(working_dir, "opt-models", opt_model_name)+".history", "wb")
+            pickle.dump(history, pfile)
+            pfile.close()
+            
+
+#%% [markdown]
+# * **Optimization results:**
+#     + Model with lowest val_loss at epoch 50: 2 dense, dense size 256, 5 conv
+#     + Model with highest val_acc at epoch 50: 1 dense, dense size 256, 2 conv, val_acc: 0.9962
+#     + Model with lowest val_loss: 1 dense, size 128, 3 conv, @epoch 23
+#     + Model with highest val_acc: 1 dense, size 256, 2 conv, @epoch 24, val_acc: 0.9967
+#     + ***The example network is near optimal***
+#     
+#     
+# **Learning rate reduction + dropout really minimizes overfitting, especially with a bigger all-connected network**  
+#%% [markdown]
+# ### Model Evaluation
+
+#%%
+# Loading pre-trained model and history
+load_model_name = "mnist-cnn-e16-b128-1543161649"
+cnn_model = load_model(os.path.join(working_dir, "models", load_model_name)+".model")
+
+#Pickle-loading training history
+pfile = open(os.path.join(working_dir, "models", load_model_name)+".history", "rb")
+history = pickle.load(pfile)
+pfile.close()
 
 
