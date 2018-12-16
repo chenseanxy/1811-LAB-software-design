@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "20181216 - SQL_Connect", "20181216 - SQL_Connect\", "{DAAD36D9-1C24-4CDF-9547-3F5CF1777056}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.6.1"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_58108"
+		Debug.AspNetCompiler.PhysicalPath = "20181216 - SQL_Connect\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_58108\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_58108"
+		Release.AspNetCompiler.PhysicalPath = "20181216 - SQL_Connect\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_58108\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "58108"
+		SlnRelativePath = "20181216 - SQL_Connect\"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DAAD36D9-1C24-4CDF-9547-3F5CF1777056}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAAD36D9-1C24-4CDF-9547-3F5CF1777056}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1FF4EFA2-6996-444C-9183-45C3D72989F4}
+	EndGlobalSection
+EndGlobal
